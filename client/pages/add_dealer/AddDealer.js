@@ -13,6 +13,7 @@ function AddDealer() {
         name: '',
         address: '',
         website: '',
+        rating: '',
     });
 
     const handleInputChange = (e) => {
@@ -137,6 +138,16 @@ function AddDealer() {
                                         id="website"
                                         placeholder='website'
                                         value={dealerData.website}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                                <div className='body__container__form__input'>
+                                    <input
+                                        type="text"
+                                        name="rating"
+                                        id="rating"
+                                        placeholder='rating'
+                                        value={dealerData.rating}
                                         onChange={handleInputChange}
                                     />
                                 </div>

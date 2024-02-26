@@ -12,17 +12,16 @@ db.init_app(app)
 
 fake = Faker()
 
-def seed_users():
-    for _ in range(10):
-        user = User(
-            firstname=fake.unique.first_name(),
-            lastname=fake.unique.last_name(),
-            email=fake.unique.email(),
-            password=fake.password()
-        )
-        db.session.add(user)
+# def seed_users():
+#     for _ in range(10):
+#         user = User(
+#             firstname=fake.unique.first_name(),
+#             lastname=fake.unique.last_name(),
+#             email=fake.unique.email(),
+#         )
+#         db.session.add(user)
 
-    db.session.commit()
+#     db.session.commit()
 
 def seed_vehicles():
     for _ in range(10):
@@ -67,20 +66,20 @@ def seed_reviews():
 
     db.session.commit()
 
-def seed_likes():
-    users = User.query.all()
-    reviews = Review.query.all()
-    vehicles = Vehicle.query.all()
+# def seed_likes():
+#     users = User.query.all()
+#     reviews = Review.query.all()
+#     vehicles = Vehicle.query.all()
 
-    for _ in range(20):
-        like = Likes(
-            user=fake.random_element(elements=users),
-            review=fake.random_element(elements=reviews),
-            vehicle=fake.random_element(elements=vehicles)
-        )
-        db.session.add(like)
+#     for _ in range(20):
+#         like = Likes(
+#             user=fake.random_element(elements=users),
+#             review=fake.random_element(elements=reviews),
+#             vehicle=fake.random_element(elements=vehicles)
+#         )
+#         db.session.add(like)
 
-    db.session.commit()
+#     db.session.commit()
 
 def seed_ratings():
     users = User.query.all()
@@ -96,17 +95,17 @@ def seed_ratings():
 
     db.session.commit()
 
-def seed_user_vehicle():
-    users = User.query.all()
-    vehicles = Vehicle.query.all()
+# def seed_user_vehicle():
+#     users = User.query.all()
+#     vehicles = Vehicle.query.all()
 
-    for user in users:
-        for _ in range(fake.random_int(min=1, max=5)):
-            user_vehicle = UserVehicle(
-                user=user,
-                vehicle=fake.random_element(elements=vehicles)
-            )
-            db.session.add(user_vehicle)
+#     for user in users:
+#         for _ in range(fake.random_int(min=1, max=5)):
+#             user_vehicle = UserVehicle(
+#                 user=user,
+#                 vehicle=fake.random_element(elements=vehicles)
+#             )
+#             db.session.add(user_vehicle)
 
     db.session.commit()
 
@@ -127,14 +126,15 @@ def seed_vehicle_dealership():
 if __name__ == '__main__':
     with app.app_context():
         try:
-            seed_users()
+            # seed_users()
             seed_vehicles()
             seed_dealerships()
             seed_reviews()
-            seed_likes()
+            # seed_likes()
             seed_ratings()
-            seed_user_vehicle()
+            # seed_user_vehicle()
             seed_vehicle_dealership()
             print("Database seeded successfully.")
+
         except SQLAlchemyError as e:
             print(f"Error seeding database: {str(e)}")

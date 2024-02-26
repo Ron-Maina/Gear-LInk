@@ -4,8 +4,13 @@ from flask_login import UserMixin
 from datetime import datetime
 from sqlalchemy.orm import relationship
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.ext.hybrid import hybrid_property
 
-db = SQLAlchemy()
+
+
+from config import db, bcrypt
+
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -14,13 +19,29 @@ class User(UserMixin, db.Model):
     firstname = db.Column(db.String(50), unique=True, nullable=False)
     lastname = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    _password_hash = db.Column(db.String(100), nullable = False)
     
     reviews = db.relationship('Review', backref='user', lazy=True)
     likes = db.relationship('Likes', backref='user', lazy=True)
     ratings = db.relationship('Rating', backref='user', lazy=True)
     vehicles_owned = db.relationship('Vehicle', secondary='user_vehicle', backref='users', lazy=True)
 
+    @hybrid_property
+    def password_hash(self):
+        return 'Unauthorized'
+    
+    @password_hash.setter
+    def password_hash(self, password):
+        password_hash = bcrypt.generate_password_hash(
+            password.encode('utf-8'
+            )
+        )
+        self._password_hash = password_hash.decode('utf-8')
+
+    def authenticate(self, password):
+        return bcrypt.check_password_hash(
+            self._password_hash, password.encode('utf-8'))
+    
     def __repr__(self):
         return f"User('{self.firstname}', '{self.lastname}', '{self.email}')"
     

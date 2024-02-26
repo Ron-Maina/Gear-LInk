@@ -60,7 +60,7 @@ function Body() {
                         <IoMdLogIn size={30} />
                     </div>
                     <div className='nav__links__container__text'>
-                        <h3>Login</h3>
+                        <h3>Logout</h3>
                     </div>
                 </Link>
             </div>

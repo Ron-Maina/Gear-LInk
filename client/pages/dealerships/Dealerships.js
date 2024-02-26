@@ -39,21 +39,7 @@ function Dealerships() {
             }
             // Refresh the list of dealerships after a successful delete
             setDealerships(dealerships.filter(dealership => dealership.id !== id));
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const editDealership = async (id) => {
-        try {
-            const response = await fetch(`http://localhost:5555/dealerships/${id}`, {
-                method: 'PUT',
-            });
-            if (!response.ok) {
-                throw new Error('Something went wrong!');
-            }
-            // Refresh the list of dealerships after a successful edit
-            setDealerships(dealerships.filter(dealership => dealership.id !== id));
+            setSelectedDealership(null);
         } catch (error) {
             console.error(error);
         }
@@ -109,7 +95,7 @@ function Dealerships() {
                         <IoMdLogIn size={30} />
                     </div>
                     <div className='nav__links__container__text'>
-                        <h3>Login</h3>
+                        <h3>Logout</h3>
                     </div>
                 </Link>
             </div>
@@ -141,7 +127,6 @@ function Dealerships() {
                         <p>Rating: {selectedDealership.rating}</p>
                         <div className='buttons'>
                             <button onClick={() => deleteDealership(selectedDealership.id)}><MdDeleteOutline size={20} /></button>
-                            <button onClick={() => editDealership(selectedDealership.id)}><FiEdit3 size={20} /></button>
                         </div>
                     </div>
                 )}

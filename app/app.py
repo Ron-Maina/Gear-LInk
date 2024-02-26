@@ -7,26 +7,9 @@ from flask_restful import Api, Resource
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-
 from models import db, User, Vehicle, Dealership, Review, Rating, Likes, UserVehicle, VehicleDealership
 
-#app configuration
-app = Flask(__name__)
-CORS(app)
-
-#set a key for session management
-app.secret_key = b'secret_key'
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'DATABASE_URI'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-
-
-#database initialization and migration
-migrate = Migrate(app, db)
-
-db.init_app(app)
-api = Api(app)
+from config import app, db, api
 
 @app.route('/')
 def index():
@@ -46,7 +29,6 @@ def authenticate_user(email, password):
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    print(data)
     #check if the required fields are present in the request data
     required_fields = ['email', 'password']
     if any(field not in data for field in required_fields):
@@ -54,12 +36,15 @@ def login():
     
     email = data['email']
     password = data['password']
+    print(email)
+
 
     #Authenticate the user
     user = User.query.filter_by(email=email).first()
     # hashed_password = generate_password_hash(data['password'], method='sha256')
 
-    if user and check_password_hash(user.password, data['password']):
+
+    if user and (user.authenticate(password) == True):
         #set a session cookie to indicate that the user is authenticated
         session['authenticated_user'] = email
         print("logged in")
@@ -83,6 +68,45 @@ def logout():
     #Clear the session cookie to log the user out
     session.pop('authenticated_user', None)
     return jsonify({"Message": "Logout successful"}), 200
+
+class Signup(Resource):
+    def post(self):
+        
+        try:
+            data = request.get_json()
+            print(data)
+            # required_fields = ['name', 'address', 'website']
+            # missing_fields = [field for field in required_fields if field not in data]
+            new_user = User(
+                firstname = data.get('firstname'),
+                email = data.get('email'),
+                lastname = data.get('lastname'),
+            )
+            new_user.password_hash = data.get('password')
+
+
+            db.session.add(new_user)
+            db.session.commit()
+
+            # session['user_id'] = new_user.id
+
+            user_dict = {
+                "id": new_user.id,
+                "firstname":new_user.firstname,
+                "lastname": new_user.lastname,
+                "email": new_user.email,
+            }
+
+            result = make_response(
+                jsonify(user_dict),
+                200
+            )
+            return result
+        
+        except ValueError:
+            print(["validation errors"])
+        
+api.add_resource(Signup, '/signup')
 
 
 class UserResource(Resource):
@@ -137,42 +161,7 @@ class UserResource(Resource):
             )
             return response
         else:
-            return jsonify({"error": f"User with id {user_id} not found"}), 404
-        
-    def post(self):
-        data = request.get_json()
-
-        # Check if required fields are present in the request data
-        required_fields = ['name', 'address', 'website']
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            error_message = f"Missing keys: {','.join(missing_fields)}"
-            return {"error": error_message}, 400
-
-        # Create a new dealership instance
-        new_dealership = Dealership(
-            name=data['name'],
-            address=data['address'],
-            website=data['website']
-            # Add other fields as needed
-        )
-
-        # Add the new dealership to the database
-        db.session.add(new_dealership)
-        db.session.commit()
-
-        # Return the newly created dealership as a response
-        dealership_data = {
-            "id": new_dealership.id,
-            "name": new_dealership.name,
-            "address": new_dealership.address,
-            "website": new_dealership.website
-            # Add other fields as needed
-        }
-
-        response = make_response(jsonify(dealership_data), 201)  # 201 Created
-        return response
-    
+            return jsonify({"error": f"User with id {user_id} not found"}), 404  
     
     #delete a user
     def delete(self, user_id):
@@ -384,29 +373,31 @@ class DealershipsResource(Resource):
             return {"error": error_message}, 400
 
         
-        dealership = Dealership(
+        new_dealership = Dealership(
             name=data['name'],
             address=data['address'],
             website=data['website'],
-            rating=data['rating'],
-            # Include other dealership attributes as needed
+            rating = data['rating'],
+            # Add other fields as needed
         )
 
-        db.session.add(dealership)
+        # Add the new dealership to the database
+        db.session.add(new_dealership)
         db.session.commit()
 
-        updated_dealership = Dealership.query.get(dealership.id)
-        dealership_dict = {
-            "id": updated_dealership.id,
-            "name": updated_dealership.name,
-            "address": updated_dealership.address,
-            "website": updated_dealership.website,
-            "rating": updated_dealership.rating,
-            # Include other dealership attributes as needed
+        # Return the newly created dealership as a response
+        dealership_data = {
+            "id": new_dealership.id,
+            "name": new_dealership.name,
+            "address": new_dealership.address,
+            "website": new_dealership.website
+            # Add other fields as needed
         }
 
-        response = make_response(jsonify(dealership_dict), 201)  # 201 Created
+        response = make_response(jsonify(dealership_data), 201)  # 201 Created
         return response
+    
+      
     
     #deletion of dealerships
     def delete(self, id):
